@@ -65,26 +65,83 @@ function draw() {
     let pos = myMap.latLngToPixel(lat, lon);
 
     // 繪製測站圓點
-    // 根據雨量大小改變顏色深淺 (以 station.now 為例)
     let rainVal = float(station.now || 0);
-    fill(0, 100, 255, 180);
-    if (rainVal > 0) fill(255, 50, 50, 200); // 有雨時顯示紅色
+
+    // 根據雨量計算圓點直徑：0mm 為 10px，50mm 以上為 60px
+    let dotSize = map(rainVal, 0, 50, 10, 60, true);
+
+    // 根據雨量計算顏色：沒雨用藍色，雨越大越紅
+    if (rainVal > 0) {
+      let r = map(rainVal, 0, 50, 150, 255, true);
+      fill(r, 50, 50, 180);
+    } else {
+      fill(0, 100, 255, 150);
+    }
     
     stroke(255);
     strokeWeight(1);
-    ellipse(pos.x, pos.y, 12, 12);
+    ellipse(pos.x, pos.y, dotSize, dotSize);
 
-    // 判斷滑鼠是否在測站圓點上
+    // 判斷滑鼠是否在該圓點範圍內 (半徑 + 緩衝)
     let d = dist(mouseX, mouseY, pos.x, pos.y);
-    if (d < 10) {
+    if (d < dotSize / 2 + 2) {
       hoveredStation = station;
     }
   }
+
+  // 繪製地圖圖例
+  drawLegend();
 
   // 如果有滑鼠懸停的測站，顯示詳細資訊
   if (hoveredStation) {
     drawTooltip(hoveredStation);
   }
+}
+
+function drawLegend() {
+  let x = width - 180;
+  let y = 20;
+  
+  push();
+  // 圖例背景容器
+  fill(255, 220);
+  stroke(0, 50);
+  rect(x, y, 160, 160, 10);
+  
+  // 圖例標題
+  noStroke();
+  fill(0);
+  textSize(14);
+  textStyle(BOLD);
+  textAlign(LEFT, TOP);
+  text("即時雨量級距", x + 15, y + 15);
+  
+  textStyle(NORMAL);
+  textSize(12);
+  
+  // 定義要顯示的參考級距
+  let levels = [0, 20, 50];
+  let labels = ["0 mm", "20 mm", "50+ mm"];
+  
+  for (let i = 0; i < levels.length; i++) {
+    let val = levels[i];
+    let dSize = map(val, 0, 50, 10, 60, true);
+    let itemY = y + 55 + i * 40;
+    
+    // 顏色邏輯與 draw() 內一致
+    if (val > 0) {
+      let r = map(val, 0, 50, 150, 255, true);
+      fill(r, 50, 50, 180);
+    } else {
+      fill(0, 100, 255, 150);
+    }
+    
+    ellipse(x + 40, itemY, dSize, dSize);
+    fill(0);
+    textAlign(LEFT, CENTER);
+    text(labels[i], x + 85, itemY);
+  }
+  pop();
 }
 
 function drawTooltip(s) {
