@@ -2,6 +2,8 @@ let myMap;
 let canvas;
 let mappa;
 let rainData = [];
+let showOnlyRaining = false;
+let filterButton;
 
 // API 與 Proxy 設定
 const apiUrl = 'https://wic.gov.taipei/OpenData/API/Rain/Get?stationNo=&loginId=open_rain&dataKey=85452C1D';
@@ -26,11 +28,32 @@ function setup() {
   myMap = mappa.tileMap(options);
   myMap.overlay(canvas);
 
+  // 建立過濾按鈕
+  filterButton = createButton('僅顯示降雨中');
+  filterButton.mousePressed(toggleFilter);
+  // 設定按鈕樣式與初始位置
+  updateButtonPosition();
+
   // 首次抓取資料
   fetchRainData();
 
   // 每 10 分鐘 (10 * 60 * 1000 ms) 更新一次資料
   setInterval(fetchRainData, 600000);
+}
+
+function toggleFilter() {
+  showOnlyRaining = !showOnlyRaining;
+  if (showOnlyRaining) {
+    filterButton.html('顯示全部測站');
+  } else {
+    filterButton.html('僅顯示降雨中');
+  }
+}
+
+function updateButtonPosition() {
+  // 將按鈕放在圖例框（高 190）的下方
+  filterButton.position(width - 180, 220);
+  filterButton.style('width', '160px');
 }
 
 function fetchRainData() {
@@ -106,7 +129,7 @@ function drawLegend() {
   // 圖例背景容器
   fill(255, 220);
   stroke(0, 50);
-  rect(x, y, 160, 160, 10);
+  rect(x, y, 160, 190, 10); // 增加高度到 190，防止大圓點超出框限
   
   // 圖例標題
   noStroke();
@@ -165,4 +188,5 @@ function drawTooltip(s) {
 function windowResized() {
   // 當瀏覽器視窗大小改變時，重新調整畫布
   resizeCanvas(windowWidth, windowHeight);
+  updateButtonPosition();
 }
