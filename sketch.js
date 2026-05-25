@@ -1,6 +1,6 @@
 let myMap;
 let canvas;
-const mappa = new Mappa('Leaflet');
+let mappa;
 let rainData = [];
 
 // API 與 Proxy 設定
@@ -18,6 +18,9 @@ const options = {
 function setup() {
   // 建立全螢幕畫布
   canvas = createCanvas(windowWidth, windowHeight);
+
+  // 初始化 Mappa
+  mappa = new Mappa('Leaflet');
   
   // 初始化地圖並將其疊加在 p5 畫布上
   myMap = mappa.tileMap(options);
